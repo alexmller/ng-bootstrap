@@ -30,6 +30,9 @@ import {ModalDismissReasons} from './modal-dismiss-reasons';
 })
 export class NgbModalWindow implements OnInit,
     AfterViewInit, OnDestroy {
+
+  private static OPEN_MODAL_COUNT = 0;
+
   private _elWithFocus: Element;  // element that is focused prior to modal opening
 
   @Input() backdrop: boolean | string = true;
@@ -56,6 +59,8 @@ export class NgbModalWindow implements OnInit,
   dismiss(reason): void { this.dismissEvent.emit(reason); }
 
   ngOnInit() {
+    ++NgbModalWindow.OPEN_MODAL_COUNT;
+
     this._elWithFocus = document.activeElement;
     this._renderer.addClass(document.body, 'modal-open');
   }
@@ -67,6 +72,8 @@ export class NgbModalWindow implements OnInit,
   }
 
   ngOnDestroy() {
+    --NgbModalWindow.OPEN_MODAL_COUNT;
+
     const body = document.body;
     const elWithFocus = this._elWithFocus;
 
@@ -79,6 +86,9 @@ export class NgbModalWindow implements OnInit,
     elementToFocus['focus'].apply(elementToFocus, []);
 
     this._elWithFocus = null;
-    this._renderer.removeClass(body, 'modal-open');
+
+    if ( NgbModalWindow.OPEN_MODAL_COUNT === 0 ) {
+      this._renderer.removeClass(body, 'modal-open');
+    }
   }
 }
